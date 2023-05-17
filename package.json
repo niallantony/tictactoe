@@ -1,0 +1,25 @@
+{
+  "name": "tictactoe",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/niallantony/tictactoe.git"
+  },
+  "author": "Niall Craven",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/niallantony/tictactoe/issues"
+  },
+  "homepage": "https://github.com/niallantony/tictactoe#readme",
+  "devDependencies": {
+    "eslint": "^8.40.0"
+  }
+  
+}
+
+

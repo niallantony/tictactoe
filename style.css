@@ -1,0 +1,8 @@
+.container {
+  display: grid;
+  width: 16rem;
+  height: 16rem;
+  grid-template: "top-left top-center top-right" 1fr   
+                "middle-left middle-center middle-right" 1fr
+                "bottom-left bottom-center bottom-right" 1fr /
+                1fr 1fr 1fr;
