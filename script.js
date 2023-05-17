@@ -12,18 +12,14 @@ const cell = (position,index) => {
     displayController.screenContainer.appendChild(cellElement);
     cellDOM = cellElement;
     console.log(`Drawn: ${position}`);
-    cellElement.addEventListener('click', cellClick);
+    cellElement.addEventListener('click', cellClick, false);
   };
+
   const cellClick = () => {
-    changeContents(Player.token);
-    console.log(cellDOM);
-    cellDOM.innerText = Player.token;
-    gameboard.alleys.forEach((alley) => {
-      console.log(alley);
-      gameboard.checkAlleysForWin(alley);
-      console.log(alley.win);
-      if (alley.win) {console.log("That's a Bingo!")}
-    })
+    if (!game.playerRound) {return}
+      changeContents(game.currentPlayer.token);
+      cellDOM.innerText = game.currentPlayer.token;
+      game.logRound(`${game.currentPlayer.name} placed a ${game.currentPlayer.token} in cell ${position}`);    
   }
 
   return { position, content, cellDOM, index, changeContents, drawCell, cellClick };
@@ -58,23 +54,67 @@ const gameboard = (() => {
     alley(cells[2],cells[4],cells[6]),
   ]
 
-  const checkAlleysForWin = (alley) => {
-    console.log(alley.a.content, alley.b.content, alley.c.content);
+  const checkAlleys = (alley) => {
     alley.win = alley.a.content === alley.b.content && alley.b.content === alley.c.content && alley.a.content !== '';
   }
 
-  return { cells, alleys, checkAlleysForWin };
+  return { cells, alleys, checkAlleys };
 })();
 
-const Player = (() => {
-  const token = 'X';
-  return {token};
-})();
+const Player = (token,name) => {
+  return {token,name};
+};
+
+
 
 const displayController = (() => {
   const screenContainer = document.querySelector(".container");
   return { screenContainer };
 })();
 
-gameboard.cells.forEach((cell) => cell.drawCell());
-console.log(gameboard.alleys);
+
+const game = (() => {
+  let win = false;
+  const playerOne = Player('X','Player One');
+  const playerTwo = Player('O','Player Two');
+  let playerRound;
+  let currentPlayer = playerOne;
+
+  
+  const initialise = () => {
+    gameboard.cells.forEach((cell) => cell.drawCell());
+    game.playerRound = true;
+    console.log('Game Started', game.playerRound);
+    game.currentPlayer = game.playerRound ? playerOne : playerTwo;
+  }
+  
+  const turnLog = [];
+  
+  const logRound = (roundText) => {
+    console.log(roundText);
+    turnLog.push(roundText)
+    checkForWin();
+    nextPlayer();
+    console.log(currentPlayer.name, game.playerRound);
+  }
+
+  const nextPlayer = () => {
+    game.playerRound = !game.playerRound;
+    game.currentPlayer = game.playerRound ? playerTwo : playerOne;
+  };
+  
+  const checkForWin = () => {
+    gameboard.alleys.forEach((alley) => {
+      gameboard.checkAlleys(alley);
+      if (alley.win) {
+        console.log("That's a Bingo!");
+        console.table(turnLog);
+      }
+    })
+  }
+  
+  return {win, playerRound, currentPlayer, turnLog, initialise, logRound, checkForWin, nextPlayer}
+})();
+
+const initialiseButton = document.querySelector('button');
+initialiseButton.addEventListener("click",game.initialise,false);
