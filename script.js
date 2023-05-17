@@ -8,12 +8,19 @@ const cell = (position) => {
     const cellElement = document.createElement("div");
     cellElement.setAttribute("style", `grid-area:${position}`);
     cellElement.classList.add("cell");
+    cellElement.setAttribute("id",position);
     displayController.screenContainer.appendChild(cellElement);
     cellDOM = cellElement;
-    console.log("done");
+    console.log(`Drawn: ${position}`);
+    cellElement.addEventListener('click', cellClick);
   };
+  const cellClick = () => {
+    changeContents(Player.token);
+    console.log(cellDOM);
+    cellDOM.innerText = Player.token;
+  }
 
-  return { position, contents, cellDOM, changeContents, drawCell };
+  return { position, contents, cellDOM, changeContents, drawCell, cellClick };
 };
 
 const gameboard = (() => {
@@ -30,6 +37,11 @@ const gameboard = (() => {
   ];
 
   return { cells };
+})();
+
+const Player = (() => {
+  const token = 'X';
+  return {token};
 })();
 
 const displayController = (() => {
