@@ -17,7 +17,7 @@ const cell = (position,index) => {
   };
 
   const cellClick = () => {
-    // if (!game.playerRound && content = !'') {return}
+      if (content != '' && !game.ongoing) {return}
       changeContents(game.currentPlayer.token);
       cellDOM.innerText = game.currentPlayer.token;
       game.logRound(`${game.currentPlayer.name} placed a ${game.currentPlayer.token} in cell ${position}`);    
@@ -41,15 +41,32 @@ const gameboard = (() => {
 
   const alley = (a,b,c) => {
     let win = false;
-    let ripeToWin = false;
+    let status = '';
     let belongsTo = '';
     let contents = [a.content, b.content, c.content];
     
-    return {win, ripeToWin , contents, belongsTo, a,b,c};
+    return {win, status , contents, belongsTo, a,b,c};
   }
 
   const changeAlleyContent = () => {
     alleys.forEach((alley) => {alley.contents = [alley.a.content, alley.b.content, alley.c.content]});
+  }
+
+  const checkForSpace = () => {
+    let space = false;
+    cells.forEach((cell) => {
+      if (cell.content === '') {
+        space = true;
+      }
+    });
+    return space;
+  }
+
+  const resetAlleys = () => {
+    alleys.forEach((alley) => {
+      alley.belongsTo = '';
+      alley.win = false;
+    })
   }
 
   const alleys = [
@@ -66,23 +83,30 @@ const gameboard = (() => {
   //checks the alley contents to see if it is all empty, almost a win or a win.
   const checkAlleys = (alley) => {
     if (alley.contents.every((value) => {return value === ''? true : false})) {
+      alley.status = 'empty'
       return
     };
     if (alley.contents.includes('')) {
       const taken = alley.contents.filter(cell => cell != '');
       if (taken[0] === taken[1]) {
-        alley.ripeToWin = true;
+        alley.status = 'ripeToWin';
         if (alley.belongsTo === '') {alley.belongsTo = game.currentPlayer.token};
         console.log(`${alley.a.position} ${alley.b.position} ${alley.c.position} is ripe for the plucking! It belongs to ${alley.belongsTo}.`)
+        return
       }
     };
     if (alley.contents.every(function(value, _, contents) {
       return contents[0] === value;
     })) {;
+      alley.status = 'won';
       alley.win = true;
+      return
+    } else {
+      alley.status = 'full';
+      return
     }
   }
-  return { cells, alleys, checkAlleys, changeAlleyContent };
+  return { cells, alleys, checkAlleys, changeAlleyContent, checkForSpace, resetAlleys };
 })();
 
 const Player = (token,name) => {
@@ -90,56 +114,46 @@ const Player = (token,name) => {
 };
 
 const Computer = (() => {
-  const tryForWin = () => {
-    gameboard.alleys.forEach((alley) => {
-      if (alley.ripeToWin === true && alley.belongsTo === game.currentPlayer.token) {
-      clickEmpty(alley);
-      console.log("I'm sorry Dave...");
-      }
-    })
-  }
-  const defensiveManeuvers = () => {
-    gameboard.alleys.forEach((alley) => {
-      if (alley.ripeToWin === true && alley.belongsTo != game.currentPlayer.token) {
-      clickEmpty(alley);
-      console.log('Beep... Disaster Averted');
-      }})  
-  }
-  const takeTheMiddleGround = () => {
-    if (gameboard.cells[4].content === '') {
-      gameboard.cells[4].cellClick();
-      console.log('The central square is mine. You stand no chance')
+
+  const computerTurn = () => {
+    let toClick;
+    toClick = gameboard.alleys.find(alley => alley.status === 'ripeToWin' && alley.belongsTo === game.currentPlayer.token);
+    if (toClick != undefined) {
+      clickEmpty(toClick);
+      console.log('The game is mine');
+      return;
     }
-  }
-  const takeAStab = () => {
-    let havingAGo = true;
-    while (havingAGo) {
+    toClick = gameboard.alleys.find(alley => alley.status === 'ripeToWin' && alley.belongsTo != game.currentPlayer.token);
+    if (toClick != undefined) {
+      clickEmpty(toClick);
+      console.log('Defensive Maneuvers');
+      return;
+    }
+    toClick = gameboard.cells[4].content === '' ? gameboard.cells[4] : undefined ;
+    if (toClick != undefined) {
+      toClick.cellClick();
+      console.log('The central square is mine. You stand no chance')
+      return;
+    }
+    while (toClick === undefined) {
       let stab = Math.floor(Math.random() * 8);
       if (gameboard.cells[stab].content === '') {
         gameboard.cells[stab].cellClick();
         console.log(`${gameboard.cells[stab].position} will suit me just fine`);
-        havingAGo = false;
+        return;
+      } else if (gameboard.checkForSpace() === false) {
+        break
       }
     }
+    return;    
   }
+
   const clickEmpty = (alley) => {
     if (alley.a.content === '') {alley.a.cellClick()}
     if (alley.b.content === '') {alley.b.cellClick()}
-    if (alley.c.content === '') {alley.b.cellClick()}
+    if (alley.c.content === '') {alley.c.cellClick()}
   }
-  const computerTurn = () => {
-    if (game.playerRound) {return};
-    tryForWin();
-    if (game.playerRound) {return};
-    console.log('No winning moves...');
-    defensiveManeuvers();
-    if (game.playerRound) {return};
-    console.log("But I'm not in any danger...");
-    takeTheMiddleGround();
-    if (game.playerRound) {return};
-    console.log("Well I'll just have to take one of these...")
-    takeAStab();
-  }
+
   return {computerTurn}
 })();
 
@@ -150,19 +164,37 @@ const displayController = (() => {
 })();
 
 
+
 const game = (() => {
   let win = false;
   const playerOne = Player('X','Player One');
   const playerTwo = Player('O','Player Two');
   let playerRound;
   let currentPlayer = playerOne;
+  let ongoing = false;
 
   
   const initialise = () => {
     gameboard.cells.forEach((cell) => cell.drawCell());
     game.playerRound = true;
-    console.log('Game Started', game.playerRound);
+    game.ongoing = true;
+    console.log('Game Started');
     game.currentPlayer = game.playerRound ? playerOne : playerTwo;
+  }
+
+  const gameOver = () => {
+    console.log('The game has ended.')
+    if (game.win) { 
+      console.log(`${currentPlayer.name} is the victor`)
+    } else {
+      console.log('The battle ended in stalemate')
+    }
+    game.ongoing = false;
+    displayController.screenContainer.innerHTML = '';
+    gameboard.cells.forEach((cell)=> {cell.changeContents('')});
+    gameboard.resetAlleys();
+    turnLog.length = 0;
+    game.win = false;
   }
   
   const turnLog = [];
@@ -172,10 +204,14 @@ const game = (() => {
     turnLog.push(roundText)
     checkForWin();
     nextPlayer();
-    console.log(currentPlayer.name, game.playerRound);
-    if (game.currentPlayer === playerTwo) {
-      Computer.computerTurn();
-    } else {return};
+    if (gameboard.checkForSpace() ) {
+      if (game.currentPlayer === playerTwo && game.ongoing) {
+        Computer.computerTurn();
+      } else {return};
+    } else {
+      game.gameOver();
+      game.ongoing = false;
+    }
   }
 
   const nextPlayer = () => {
@@ -189,11 +225,13 @@ const game = (() => {
       if (alley.win) {
         console.log("That's a Bingo!");
         console.table(turnLog);
+        game.win = true;
+        game.gameOver();
       }
     })
   }
   
-  return {win, playerRound, currentPlayer, turnLog, initialise, logRound, checkForWin, nextPlayer}
+  return {playerRound, currentPlayer, ongoing, initialise, logRound, checkForWin, gameOver}
 })();
 
 const initialiseButton = document.querySelector('button');
