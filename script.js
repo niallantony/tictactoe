@@ -2,8 +2,8 @@ const cell = (position,index) => {
   let content = "";
   let cellDOM;
   const changeContents = (token) => {
-    gameboard.cells[index].content = token;
-    gameboard.changeAlleyContent();
+    game.gameboard.cells[index].content = token;
+    game.gameboard.changeAlleyContent();
   };
   const drawCell = () => {
     const cellElement = document.createElement("div");
@@ -26,7 +26,7 @@ const cell = (position,index) => {
   return { position, content, cellDOM, index, changeContents, drawCell, cellClick };
 };
 
-const gameboard = (() => {
+const board = (() => {
   const cells = [
     cell("top-left",0),
     cell("top-center",1),
@@ -107,29 +107,47 @@ const gameboard = (() => {
     }
   }
   return { cells, alleys, checkAlleys, changeAlleyContent, checkForSpace, resetAlleys };
-})();
+});
 
 const Player = (token,name) => {
   return {token,name};
 };
 
+// const minimaxComp = () => {
+
+//   const possibleMoves = [];
+
+//   const createGhostBoard = () => {
+//     const thisBoard =
+//         return {thisBoard};
+//   }
+
+//   const currentSetUp = createGhostBoard(gameboard);
+
+//   const getPossibleMoves = (board) =>
+//     board.cells.forEach((cell) => {
+
+//     })
+  
+// }
+
 const Computer = (() => {
 
   const computerTurn = () => {
     let toClick;
-    toClick = gameboard.alleys.find(alley => alley.status === 'ripeToWin' && alley.belongsTo === game.currentPlayer.token);
+    toClick = game.gameboard.alleys.find(alley => alley.status === 'ripeToWin' && alley.belongsTo === game.currentPlayer.token);
     if (toClick != undefined) {
       clickEmpty(toClick);
       console.log('The game is mine');
       return;
     }
-    toClick = gameboard.alleys.find(alley => alley.status === 'ripeToWin' && alley.belongsTo != game.currentPlayer.token);
+    toClick = game.gameboard.alleys.find(alley => alley.status === 'ripeToWin' && alley.belongsTo != game.currentPlayer.token);
     if (toClick != undefined) {
       clickEmpty(toClick);
       console.log('Defensive Maneuvers');
       return;
     }
-    toClick = gameboard.cells[4].content === '' ? gameboard.cells[4] : undefined ;
+    toClick = game.gameboard.cells[4].content === '' ? game.gameboard.cells[4] : undefined ;
     if (toClick != undefined) {
       toClick.cellClick();
       console.log('The central square is mine. You stand no chance')
@@ -137,11 +155,11 @@ const Computer = (() => {
     }
     while (toClick === undefined) {
       let stab = Math.floor(Math.random() * 8);
-      if (gameboard.cells[stab].content === '') {
-        gameboard.cells[stab].cellClick();
-        console.log(`${gameboard.cells[stab].position} will suit me just fine`);
+      if (game.gameboard.cells[stab].content === '') {
+        game.gameboard.cells[stab].cellClick();
+        console.log(`${game.gameboard.cells[stab].position} will suit me just fine`);
         return;
-      } else if (gameboard.checkForSpace() === false) {
+      } else if (game.gameboard.checkForSpace() === false) {
         break
       }
     }
@@ -172,6 +190,8 @@ const game = (() => {
   let playerRound;
   let currentPlayer = playerOne;
   let ongoing = false;
+  let turnCounter = 0
+  const gameboard = board();
 
   
   const initialise = () => {
@@ -194,6 +214,7 @@ const game = (() => {
     gameboard.cells.forEach((cell)=> {cell.changeContents('')});
     gameboard.resetAlleys();
     turnLog.length = 0;
+    turnCounter = 0;
     game.win = false;
   }
   
@@ -202,17 +223,20 @@ const game = (() => {
   const logRound = (roundText) => {
     console.log(roundText);
     turnLog.push(roundText)
+    turnCounter++;
     checkForWin();
     nextPlayer();
     if (gameboard.checkForSpace() ) {
       if (game.currentPlayer === playerTwo && game.ongoing) {
         Computer.computerTurn();
+        turnCounter++;
       } else {return};
     } else {
       game.gameOver();
       game.ongoing = false;
     }
   }
+  const getTurn = () => turnCounter;
 
   const nextPlayer = () => {
     game.playerRound = !game.playerRound;
@@ -231,7 +255,7 @@ const game = (() => {
     })
   }
   
-  return {playerRound, currentPlayer, ongoing, initialise, logRound, checkForWin, gameOver}
+  return {playerRound, currentPlayer, ongoing, gameboard, initialise, logRound, checkForWin, gameOver, getTurn}
 })();
 
 const initialiseButton = document.querySelector('button');
