@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;500&display=swap');
 
+:root {
+  --bg: #EEFFEE;
+  --text: #334433;
+}
 
 .container {
   display: grid;
@@ -9,13 +13,13 @@
                 "middle-left middle-center middle-right" 1fr
                 "bottom-left bottom-center bottom-right" 1fr /
                 1fr 1fr 1fr;
-  border: 2px solid gray;
+  border: 2px solid var(--text);
   font-family: 'Nunito Sans', sans-serif;
   font-weight: 500;
 }
 
 .cell {
-    border: 2px solid gray;
+    border: 2px solid var(--text);
     font-size: 3rem;
     line-height: 6rem;
     width: 100%;
@@ -23,5 +27,50 @@
     text-align: center;
     align-items: center;
     box-sizing: border-box;
+    color: var(--text);
+    background-color: var(--bg);
+}
 
+.initialise {
+  padding: 1rem;
+  font-size: 1.2rem;
+  font-family: 'Nunito Sans', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--text);
+}
+
+.flex-container {
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+dialog {
+  padding: 2rem;
+  flex-direction: column;
+  gap: 2rem;
+  font-family: 'Nunito Sans', sans-serif;
+  align-items: center;
+  background-color: var(--bg);
+  border: 2px solid var(--text);
+  color: var(--text);
+}
+
+dialog[open] {
+  display:flex;
+}
+
+dialog div { 
+  font-size: 1.5rem;
+}
+
+dialog button {
+  padding:1rem;
+  width: auto;
+  background-color: var(--bg);
+  border: 1px solid var(--text);
+  border-radius: 3px;
 }

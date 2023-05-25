@@ -31,10 +31,13 @@ const game = (() => {
         currentPlayer = playerTwo;
         if (checkWin(gameboard.layout)) {
             console.log(`${playerOne.name} wins!`)
+            gameOver(`${playerOne.name} wins!`);
         }
         if (isSpace(gameboard.layout)) {
             initialiseMinimax();
             currentPlayer = playerOne;
+        } else if (!isSpace(gameboard.layout)) {
+            gameOver('Nobody Wins!');
         }
     }
 
@@ -45,6 +48,12 @@ const game = (() => {
     const newGame = () => {
         gameboard.layout = ['','','','','','','','',''];
         currentPlayer = playerOne;
+    }
+
+    const gameOver = (displayText) => {
+        screenContainer.gameOverModal.showModal();
+        const resultText = document.getElementById('results');
+        resultText.textContent = displayText;
     }
 
     const getContents = (cell) => {
@@ -73,17 +82,33 @@ const game = (() => {
     }
 
     const initialiseMinimax = () => {
+        let moveToTake;
         const turnScores = minimax(playerTwo, playerOne, gameboard)
         const resultsMapped = turnScores.filter(result => result !== false);
         const highestScore = resultsMapped.reduce((prev,current) => {
             return (prev > current) ? prev : current;
         })
-        const moveToTake = turnScores.indexOf(highestScore);
+        const bestMoves = turnScores.filter(turn => turn === highestScore);
+        if (bestMoves.length === 1) {
+            moveToTake = turnScores.indexOf(highestScore);
+        }
+        if (bestMoves.length > 1) {
+            const randomTurn = Math.floor(Math.random() * bestMoves.length);
+            for (let i = 0; i < randomTurn ; i++) {
+                const moveToChange = turnScores.indexOf(highestScore);
+                turnScores[moveToChange] = false;
+            }
+            moveToTake = turnScores.indexOf(highestScore);
+        }
         console.log(moveToTake);
         layTile(gameboard.layout,playerTwo.token,moveToTake);
         screenContainer.refreshScreen();
         if (checkWin(gameboard.layout)) {
             console.log('Computer Wins!')
+            gameOver('Computer Wins!');
+        }
+        if (!isSpace(gameboard.layout)) {
+            gameOver('Nobody Wins!');
         }
     }
 
@@ -103,7 +128,7 @@ const game = (() => {
             }
         }
         if (isSpace(boardToCheck.layout) === false) {
-            console.log('Stalemate');
+            // console.log('Stalemate');
             return 0;
         }
         const results = minimax(playerOne,playerTwo,boardToCheck);
@@ -153,28 +178,29 @@ ${board.layout[6]}  |  ${board.layout[7]}  |  ${board.layout[8]} \n`)
 
 const screenContainer = (() => {
     const screenContainer = document.querySelector('.container');
+    const gameOverModal = document.getElementById('gameOver');
     const cellElements = [];
     const cellOrder = ['top-left',
-                        'top-center',
-                        'top-right',
-                        'middle-left',
-                        'middle-center',
-                        'middle-right',
-                        'bottom-left',
-                        'bottom-center',
-                        'bottom-right']
-
+    'top-center',
+    'top-right',
+    'middle-left',
+    'middle-center',
+    'middle-right',
+    'bottom-left',
+    'bottom-center',
+    'bottom-right']
+    
     const refreshScreen = () => {
         for (let i = 0; i < cellElements.length ; i++) {
             cellElements[i].textContent = game.getContents(i);
         }
     }
-
+    
     const userClick = (cell) => {  
         const index = cellOrder.indexOf(cell)
         game.userLay(index);
     }
-
+    
     const drawBoard = () => {
         screenContainer.innerHTML = '';
         cellElements.length = 0;
@@ -188,8 +214,9 @@ const screenContainer = (() => {
         drawCell('bottom-left');
         drawCell('bottom-center');
         drawCell('bottom-right');
+        gameOverModal.close();
     }
-
+    
     const drawCell = (position) => {
         const cellElement = document.createElement("button");
         cellElement.setAttribute("style", `grid-area:${position}`);
@@ -199,11 +226,12 @@ const screenContainer = (() => {
         cellElement.addEventListener('click',(event) => {userClick(event.target.id)});
         console.log(`Drawn: ${position}`);
         cellElements.push(cellElement);
-      };
+    };
+    const newGameButton = document.getElementById('newGameButton');
+    newGameButton.addEventListener('click',drawBoard);
+    const initialiseButton = document.querySelector('button');
+    initialiseButton.addEventListener("click",drawBoard,false);
     
-    return {drawBoard, refreshScreen}
+    return {drawBoard, refreshScreen, gameOverModal}
     
 })();
-
-const initialiseButton = document.querySelector('button');
-initialiseButton.addEventListener("click",screenContainer.drawBoard,false);
