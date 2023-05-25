@@ -13,6 +13,7 @@ const game = (() => {
     const playerOne = Player('X','user',false);
     const playerTwo = Player('O','computer',true);
     const gameboard = board();
+    let currentPlayer = playerOne;
 
     const findEmptyCells = (layout) => {
         const emptyCells = layout.map((cell) => {return cell === '' ? true : false;});
@@ -24,11 +25,30 @@ const game = (() => {
     }
 
     const userLay = (cell) => {
+        if (gameboard.layout[cell] != '' || currentPlayer != playerOne) {return};
         layTile(gameboard.layout,playerOne.token,cell);
+        screenContainer.refreshScreen();
+        currentPlayer = playerTwo;
+        if (checkWin(gameboard.layout)) {
+            console.log(`${playerOne.name} wins!`)
+        }
+        if (isSpace(gameboard.layout)) {
+            initialiseMinimax();
+            currentPlayer = playerOne;
+        }
     }
 
     const layTile = (layout,tile,cell) => {
         layout[cell] = tile;
+    }
+
+    const newGame = () => {
+        gameboard.layout = ['','','','','','','','',''];
+        currentPlayer = playerOne;
+    }
+
+    const getContents = (cell) => {
+        return gameboard.layout[cell]
     }
 
     const checkWin = (layout) => {
@@ -54,11 +74,17 @@ const game = (() => {
 
     const initialiseMinimax = () => {
         const turnScores = minimax(playerTwo, playerOne, gameboard)
-        const highestScore = turnScores.reduce((prev,current) => {
+        const resultsMapped = turnScores.filter(result => result !== false);
+        const highestScore = resultsMapped.reduce((prev,current) => {
             return (prev > current) ? prev : current;
         })
         const moveToTake = turnScores.indexOf(highestScore);
+        console.log(moveToTake);
         layTile(gameboard.layout,playerTwo.token,moveToTake);
+        screenContainer.refreshScreen();
+        if (checkWin(gameboard.layout)) {
+            console.log('Computer Wins!')
+        }
     }
 
     const playMinimax = (cell, playerTwo, playerOne, layoutIn) => {
@@ -81,7 +107,7 @@ const game = (() => {
             return 0;
         }
         const results = minimax(playerOne,playerTwo,boardToCheck);
-        const resultsMapped = results.filter(result => result != false);
+        const resultsMapped = results.filter(result => result !== false);
         const score = resultsMapped.reduce((prev,current) => {
             if (!playerTwo.isComp) {
                 // console.log('Finding maximum score...')
@@ -122,5 +148,62 @@ ${board.layout[6]}  |  ${board.layout[7]}  |  ${board.layout[8]} \n`)
     }
 
     console.log(gameboard);
-    return {initialiseMinimax, userLay, callTable}
+    return {initialiseMinimax, userLay, callTable, getContents, newGame}
 })();
+
+const screenContainer = (() => {
+    const screenContainer = document.querySelector('.container');
+    const cellElements = [];
+    const cellOrder = ['top-left',
+                        'top-center',
+                        'top-right',
+                        'middle-left',
+                        'middle-center',
+                        'middle-right',
+                        'bottom-left',
+                        'bottom-center',
+                        'bottom-right']
+
+    const refreshScreen = () => {
+        for (let i = 0; i < cellElements.length ; i++) {
+            cellElements[i].textContent = game.getContents(i);
+        }
+    }
+
+    const userClick = (cell) => {  
+        const index = cellOrder.indexOf(cell)
+        game.userLay(index);
+    }
+
+    const drawBoard = () => {
+        screenContainer.innerHTML = '';
+        cellElements.length = 0;
+        game.newGame();
+        drawCell('top-left');
+        drawCell('top-center');
+        drawCell('top-right');
+        drawCell('middle-left');
+        drawCell('middle-center');
+        drawCell('middle-right');
+        drawCell('bottom-left');
+        drawCell('bottom-center');
+        drawCell('bottom-right');
+    }
+
+    const drawCell = (position) => {
+        const cellElement = document.createElement("button");
+        cellElement.setAttribute("style", `grid-area:${position}`);
+        cellElement.classList.add("cell");
+        cellElement.setAttribute("id",position);
+        screenContainer.appendChild(cellElement);
+        cellElement.addEventListener('click',(event) => {userClick(event.target.id)});
+        console.log(`Drawn: ${position}`);
+        cellElements.push(cellElement);
+      };
+    
+    return {drawBoard, refreshScreen}
+    
+})();
+
+const initialiseButton = document.querySelector('button');
+initialiseButton.addEventListener("click",screenContainer.drawBoard,false);
