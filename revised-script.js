@@ -87,6 +87,75 @@ const game = (() => {
     });
   };
 
+  const getCell = (row,index) => {
+    let alleys = []
+    alleys[0] = Array(0, 1, 2);
+    alleys[1] = Array(3, 4, 5);
+    alleys[2] = Array(6, 7, 8);
+    alleys[3] = Array(0, 3, 6);
+    alleys[4] = Array(1, 4, 7);
+    alleys[5] = Array(2, 5, 8);
+    alleys[6] = Array(0, 4, 8);
+    alleys[7] = Array(2, 4, 6);
+    return  alleys[row][index];
+  };
+
+
+  const mediumComp = (layout) => {
+    let alleys = [];
+    let tileToPlay;
+    let alleyIndex;
+
+    alleys[0] = Array(layout[0], layout[1], layout[2]);
+    alleys[1] = Array(layout[3], layout[4], layout[5]);
+    alleys[2] = Array(layout[6], layout[7], layout[8]);
+    alleys[3] = Array(layout[0], layout[3], layout[6]);
+    alleys[4] = Array(layout[1], layout[4], layout[7]);
+    alleys[5] = Array(layout[2], layout[5], layout[8]);
+    alleys[6] = Array(layout[0], layout[4], layout[8]);
+    alleys[7] = Array(layout[2], layout[4], layout[6]);
+    alleys.some((alley) => {
+        const playThis = checkAlleyForNearWin(alley, playerTwo.token);
+        if (playThis === 0 || playThis === 1 || playThis === 2) {
+            tileToPlay = playThis;
+            alleyIndex = alley;
+        }
+    })
+    if (tileToPlay === undefined) {
+        alleys.some((alley) => {
+            const playThis = checkAlleyForNearWin(alley, playerOne.token)
+            if (playThis === 0 || playThis === 1 || playThis === 2) {
+                tileToPlay = playThis;
+                alleyIndex = alley;
+            }
+    })}
+    if (tileToPlay === undefined) {
+        let playing = true;
+        while (playing) {
+            const tryThis = Math.floor(Math.random() * 9);
+            if (gameboard.layout[tryThis] === '') {
+                tileToPlay = tryThis;
+                playing = !playing;
+            }
+            if (isSpace(gameboard.layout) === false) {
+                break
+            }
+        }
+    }
+    if (alleyIndex != undefined) {
+        alleyIndex = alleys.indexOf(alleyIndex);
+        tileToPlay = getCell(alleyIndex,tileToPlay);
+    }
+    layTile(gameboard.layout,playerTwo.token,tileToPlay);
+    screenContainer.refreshScreen();
+    if (checkWin(gameboard.layout)) {
+      gameOver("Computer Wins!");
+    }
+    if (!isSpace(gameboard.layout)) {
+      gameOver("Nobody Wins!");
+    }
+}
+
   const userLay = (cell) => {
     if (gameboard.layout[cell] != "") {
       return;
@@ -107,8 +176,8 @@ const game = (() => {
         } else if (currentPlayer.type === 'easy') {
             easyComp();
             currentPlayer = playerOne;
-        } else if (currentPLayer.type === 'medium') {
-            mediumComp();
+        } else if (currentPlayer.type === 'medium') {
+            mediumComp(gameboard.layout);
             currentPlayer = playerOne;
         }
     } else if (!isSpace(gameboard.layout)) {
@@ -134,6 +203,23 @@ const game = (() => {
   const getContents = (cell) => {
     return gameboard.layout[cell];
   };
+
+  const checkAlleyForNearWin = (alley,token) => {
+    if (alley[0] === '') {
+        if (alley[1] === token && alley[2] === token) {
+            return 0
+        }
+    } else if (alley[1] === '') {
+        if (alley[0] === token && alley[2] === token) {
+            return 1
+        }
+    } else if (alley[2] === '') {
+        if (alley[0] === token && alley[1] === token) {
+            return 2
+        }
+    } else {return false}
+    
+  }
 
   const checkWin = (layout) => {
     let alleys = [];
