@@ -1,47 +1,55 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;500&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;500&display=swap");
 
 :root {
-  --bg: #EEFFEE;
+  --bg: #eeffee;
   --text: #334433;
 }
 
 .container {
   display: grid;
-  width: 18rem;
-  height: 18rem;
-  grid-template: "top-left top-center top-right" 1fr   
-                "middle-left middle-center middle-right" 1fr
-                "bottom-left bottom-center bottom-right" 1fr /
-                1fr 1fr 1fr;
+  width: max(18rem, 50%);
+  aspect-ratio: 1 / 1;
+  grid-template:
+    "top-left top-center top-right" 1fr
+    "middle-left middle-center middle-right" 1fr
+    "bottom-left bottom-center bottom-right" 1fr /
+    1fr 1fr 1fr;
   border: 2px solid var(--text);
-  font-family: 'Nunito Sans', sans-serif;
+  font-family: "Nunito Sans", sans-serif;
   font-weight: 500;
 }
 
 .cell {
-    border: 2px solid var(--text);
-    font-size: 3rem;
-    line-height: 6rem;
-    width: 100%;
-    height: 6rem;
-    text-align: center;
-    align-items: center;
-    box-sizing: border-box;
-    color: var(--text);
-    background-color: var(--bg);
+  border: 2px solid var(--text);
+  font-size: 3em;
+  line-height: 6rem;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  align-items: center;
+  box-sizing: border-box;
+  color: var(--text);
+  background-color: var(--bg);
 }
 
 .initialise {
   padding: 1rem;
   font-size: 1.2rem;
-  font-family: 'Nunito Sans', sans-serif;
+  font-family: "Nunito Sans", sans-serif;
   background-color: var(--bg);
   color: var(--text);
   border: 1px solid var(--text);
 }
 
+.buttons-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
 .flex-container {
-  display:flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2rem;
@@ -52,7 +60,7 @@ dialog {
   padding: 2rem;
   flex-direction: column;
   gap: 2rem;
-  font-family: 'Nunito Sans', sans-serif;
+  font-family: "Nunito Sans", sans-serif;
   align-items: center;
   background-color: var(--bg);
   border: 2px solid var(--text);
@@ -60,15 +68,15 @@ dialog {
 }
 
 dialog[open] {
-  display:flex;
+  display: flex;
 }
 
-dialog div { 
+dialog div {
   font-size: 1.5rem;
 }
 
 dialog button {
-  padding:1rem;
+  padding: 1rem;
   width: auto;
   background-color: var(--bg);
   border: 1px solid var(--text);

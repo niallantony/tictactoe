@@ -10,12 +10,43 @@
   </head>
   <body>
     <div class="flex-container">
-    <div class="container"></div>
-    <button class="initialise">initialise</button>
+      <div class="container"></div>
+      <div class="buttons-container">
+        <button class="initialise" id="playerOneButton">Player One</button>
+        <button class="initialise" id="initialise">Initialise</button>
+        <button class="initialise" id="playerTwoButton">Player Two</button>
+      </div>
     </div>
     <dialog id="gameOver">
       <div id="results"></div>
       <button id="newGameButton">New Game</button>
+    </dialog>
+    <dialog id="newPlayer">
+      <form>
+        <div class="name">
+          <label for="name">Name</label>
+          <input name="name" id="nameInput" />
+        </div>
+        <div class="token">
+          <label for="token">Token</label>
+          <input name="token" id="tokenInput" />
+        </div>
+        <div class="difficulty">
+          <label for="difficulty"
+            >Difficulty
+            <select id="player-select">
+              <option value="player" selected>Player</option>
+              <option value="easy">Baby's First Keyboard</option>
+              <option value="medium">The Calculator</option>
+              <option value="minimax">HAL 3000</option>
+            </select>
+          </label>
+        </div>
+        <div class="player-buttons">
+          <button id="newPlayerSubmit">Submit</button>
+          <button id="cancel" formmethod="dialog">Cancel</button>
+        </div>
+      </form>
     </dialog>
   </body>
 </html>
