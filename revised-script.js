@@ -10,8 +10,8 @@ const Player = (token, name, type) => {
 };
 
 const game = (() => {
-  let playerOne = Player("X", "user", 'player');
-  let playerTwo = Player("O", "computer", 'minimax');
+  let playerOne = Player("X", "Player", 'player');
+  let playerTwo = Player("O", "Computer", 'minimax');
   const gameboard = board();
   let currentPlayer = playerOne;
 
@@ -58,26 +58,42 @@ const game = (() => {
     const nameBox = document.getElementById("nameInput");
     const tokenBox = document.getElementById("tokenInput");
     const typeBox = document.getElementById("player-select");
-    if (thisPlayer === 'playerOneButton') {typeBox.disabled = true}
-    nameBox.addEventListener("change", () => {
-      newName = nameBox.value;
-    });
-    tokenBox.addEventListener("change", () => {
-      newToken = tokenBox.value;
-    });
-    typeBox.addEventListener("change", () => {
-      newType = typeBox.value;
-    });
+    if (thisPlayer === 'playerOneButton') {
+        typeBox.value = 'player'
+        typeBox.disabled = true
+        nameBox.value = playerOne.name;
+        tokenBox.value = playerOne.token;
+    } else {
+        typeBox.disabled = false;
+        typeBox.value = playerTwo.type
+        nameBox.value = playerTwo.name;
+        tokenBox.value = playerTwo.token;
+    }
     submitButton.addEventListener("click", (event) => {
         event.preventDefault();
+        newName = nameBox.value;
+        newToken = tokenBox.value;
+        newType = typeBox.value;
+        newName = newName === '' ? 'Anonymous' : newName;
+        if (newToken === '' && player === 'playerTwoButton') {
+            if (playerOne.token != 'O') {
+                newToken = 'O';
+            } else {
+                newToken = 'X';
+            }
+        }
+        if (newToken === '' && player === 'playerOneButton') {
+            if (playerTwo.token != 'O') {
+                newToken = 'O';
+            } else {
+                newToken = 'x';
+            }
+        }
         if (thisPlayer === 'playerOneButton') {playerOne = Player(newToken,newName,'Player')};
         if (thisPlayer === 'playerTwoButton') {playerTwo = Player(newToken,newName,newType)};
         screenContainer.drawBoard();
         playerForm.close();
         thisPlayer = '';
-        nameBox.value = '';
-        tokenBox.value = '';
-        typeBox.value = '';
     });
   };
 
@@ -163,12 +179,12 @@ const game = (() => {
     layTile(gameboard.layout, currentPlayer.token, cell);
     screenContainer.refreshScreen();
     const nextPlayer = currentPlayer === playerOne ? playerTwo : playerOne ;
-    currentPlayer = nextPlayer;
     if (checkWin(gameboard.layout)) {
-      console.log(`${playerOne.name} wins!`);
-      gameOver(`${playerOne.name} wins!`);
-      return;
+        console.log(`${playerOne.name} wins!`);
+        gameOver(`${currentPlayer.name} wins!`);
+        return;
     }
+    currentPlayer = nextPlayer;
     if (isSpace(gameboard.layout)) {
         if (currentPlayer.type === 'minimax') {
             initialiseMinimax();
