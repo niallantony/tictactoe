@@ -310,12 +310,12 @@ const game = (() => {
     }
     if (isSpace(boardToCheck.layout) === false) {
       // console.log('Stalemate');
-      return 0;
+      return 0 + boardToCheck.depth;
     }
     const results = minimax(playerOne, playerTwo, boardToCheck);
     const resultsMapped = results.filter((result) => result !== false);
     const score = resultsMapped.reduce((prev, current) => {
-      if (!playerTwo.type === 'minimax') {
+      if (playerOne.type === 'minimax') {
         // console.log('Finding maximum score...')
         return prev > current ? prev : current;
       } else {
